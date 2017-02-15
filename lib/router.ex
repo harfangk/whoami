@@ -6,7 +6,7 @@ defmodule Whoami.Router do
 
   get "/" do
     conn
-    |> send_resp(200, "wow")
+    |> send_resp(200, Whoami.parse_conn(conn))
   end
 
   match _ do

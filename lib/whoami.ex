@@ -4,9 +4,11 @@ defmodule Whoami do
   """
 
   def parse_conn(conn) do
-    conn.req_headers
+    ip_address = parse_ip_address(conn)
+    language = parse_language(conn)
+    software = parse_software_info(conn)
+    ~s({"ipaddress":"#{ip_address}","language":"#{language}","software":"#{software}"})
   end
-  #[{"host", "localhost:4000"}, {"connection", "keep-alive"}, {"upgrade-insecure-requests", "1"}, {"user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36"}, {"accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"}, {"accept-encoding", "gzip, deflate, sdch, br"}, {"accept-language", "ko-KR,ko;q=0.8,en-US;q=0.6,en;q=0.4"}]
    
   defp parse_ip_address(conn) do
     conn.remote_ip
@@ -16,5 +18,39 @@ defmodule Whoami do
 
   defp parse_language(conn) do
     conn.req_headers
+    |> Enum.find(fn({key, _}) -> key == "accept-language" end)
+    |> elem(1)
+    |> String.split(",")
+    |> List.first()
+  end
+
+  defp parse_software_info(conn) do
+    conn.req_headers
+    |> Enum.find(fn({key, _}) -> key == "user-agent" end)
+    |> elem(1)
+    |> get_content_of_first_pair_of_parentheses()
+  end
+
+  defp get_content_of_first_pair_of_parentheses(s) do
+    cl = String.to_charlist(s)
+    first_opening = Enum.find_index(cl, fn(x) -> x == 40 end)
+    sub_cl = Enum.slice(cl, (first_opening+1)..-1)
+    content = Enum.reduce_while(sub_cl, {[], 1}, fn(x, {list, counter} = acc) ->
+                        if counter < 1 do
+                          {:halt, acc}
+                        else 
+                          case x do
+                            40 -> {:cont, {[x | list], counter + 1}}
+                            41 -> {:cont, {[x | list], counter - 1}}
+                            _ -> {:cont, {[x | list], counter}}
+                          end
+                        end
+    end)
+
+    content
+    |> elem(0)
+    |> Enum.slice(1..-1)
+    |> Enum.reverse()
+    |> List.to_string()
   end
 end
