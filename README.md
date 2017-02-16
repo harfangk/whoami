@@ -1,19 +1,6 @@
 # Whoami
 
-**TODO: Add description**
+A toy app that parses HTTP request headers to show the browser's ip address,
+preferred language, and the type and version of operating system.
 
-## Installation
-
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `whoami` to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [{:whoami, "~> 0.1.0"}]
-end
-```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/whoami](https://hexdocs.pm/whoami).
-
+It's deployed here: [https://radiant-cliffs-47668.herokuapp.com/](https://radiant-cliffs-47668.herokuapp.com/)
