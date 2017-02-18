@@ -32,25 +32,23 @@ defmodule Whoami do
   end
 
   defp get_content_of_first_pair_of_parentheses(s) do
-    cl = String.to_charlist(s)
-    first_opening = Enum.find_index(cl, fn(x) -> x == 40 end)
-    sub_cl = Enum.slice(cl, (first_opening+1)..-1)
-    content = Enum.reduce_while(sub_cl, {[], 1}, fn(x, {list, counter} = acc) ->
-                        if counter < 1 do
-                          {:halt, acc}
-                        else 
-                          case x do
-                            40 -> {:cont, {[x | list], counter + 1}}
-                            41 -> {:cont, {[x | list], counter - 1}}
-                            _ -> {:cont, {[x | list], counter}}
-                          end
-                        end
-    end)
+    subs = substring_after_first_opening_paren(s)
 
-    content
-    |> elem(0)
-    |> Enum.slice(1..-1)
-    |> Enum.reverse()
-    |> List.to_string()
+    length_after_first_opening_paren = byte_size(subs)
+
+    length_after_matching_closing_paren =
+      subs
+      |> substring_after_matching_closing_paren(0)
+      |> byte_size()
+
+    binary_part(subs, 0, length_after_first_opening_paren - length_after_matching_closing_paren)
   end
+
+  defp substring_after_first_opening_paren(<<"(", rest::binary>>), do: rest
+  defp substring_after_first_opening_paren(<<_, rest::binary>>), do: substring_after_first_opening_paren(rest)
+
+  defp substring_after_matching_closing_paren(<<")", _::binary>> = rest, 0), do: rest
+  defp substring_after_matching_closing_paren(<<")", rest::binary>>, n), do: substring_after_matching_closing_paren(rest, n - 1)
+  defp substring_after_matching_closing_paren(<<"(", rest::binary>>, n), do: substring_after_matching_closing_paren(rest, n + 1)
+  defp substring_after_matching_closing_paren(<<_::utf8, rest::binary>>, n), do: substring_after_matching_closing_paren(rest, n)
 end
